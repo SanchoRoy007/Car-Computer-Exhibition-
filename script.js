@@ -1,83 +1,155 @@
-let car = document.getElementById("car");
-let obstacles = document.querySelectorAll(".obstacle");
-let scoreElement = document.getElementById("score");
-let score = 0;
-let gameSpeed = 2;
-let carPosition = 220;
-let gameOver = false;
-
-// Move the car left and right using arrow keys
-document.addEventListener("keydown", function(e) {
-    if (gameOver) return; // Prevent movement after game over
-
-    if (e.key === "ArrowLeft" && carPosition > 0) {
-        carPosition -= 10;
-    } else if (e.key === "ArrowRight" && carPosition < 440) {
-        carPosition += 10;
-    }
-    car.style.left = carPosition + "px";
-});
-
-// Move obstacles and check for collisions
-function moveObstacles() {
-    obstacles.forEach(function(obstacle) {
-        let obstacleTop = parseInt(window.getComputedStyle(obstacle).top);
-
-        // Reset obstacle when it goes off-screen
-        if (obstacleTop > 700) {
-            obstacle.style.top = "-50px";
-            obstacle.style.left = Math.random() * 450 + "px";  // Randomly position obstacle
-            score += 10;
-            scoreElement.innerText = "Score: " + score;
-        } else {
-            obstacle.style.top = obstacleTop + gameSpeed + "px";
-        }
-
-        // Check for collision
-        if (
-            obstacleTop + 50 > 650 &&
-            obstacleTop < 700 &&
-            parseInt(obstacle.style.left) < carPosition + 60 &&
-            parseInt(obstacle.style.left) + 50 > carPosition
-        ) {
-            gameOver = true;
-            document.getElementById("final-score").innerText = score;
-            document.getElementById("game-over").style.display = "block";
-        }
-    });
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
 }
 
-// Reset the game
-function resetGame() {
-    score = 0;
-    scoreElement.innerText = "Score: 0";
-    carPosition = 220;
-    car.style.left = carPosition + "px";
-    gameOver = false;
-    document.getElementById("game-over").style.display = "none";
-
-    // Reset obstacles positions
-    obstacles.forEach(function(obstacle) {
-        obstacle.style.top = "-50px";  // Reset obstacles to start position
-        obstacle.style.animation = "none";  // Stop animations
-        obstacle.offsetHeight;  // Trigger a reflow to reset animations
-        obstacle.style.animation = "fall 2s linear infinite"; // Restart animations
-    });
-
-    // Restart the game loop
-    gameLoop();
+body {
+    background-color: #f0f0f0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    font-family: Arial, sans-serif;
 }
 
-// Restart button functionality
-document.getElementById("restart-btn").addEventListener("click", resetGame);
-
-// Game loop
-function gameLoop() {
-    if (!gameOver) {
-        moveObstacles();
-        requestAnimationFrame(gameLoop);
-    }
+.game-container {
+    width: 500px;
+    height: 700px;
+    position: relative;
+    overflow: hidden;
+    border-radius: 15px;
+    background-color: #333;
 }
 
-// Start the game loop initially
-gameLoop();
+#road {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: #555;
+    background-image: repeating-linear-gradient(transparent, transparent 45px, #444 45px, #444 55px);
+    background-size: 100% 60px;
+    animation: move-road 2s linear infinite;
+}
+
+@keyframes move-road {
+    0% { top: 0; }
+    100% { top: 60px; }
+}
+
+#car {
+    width: 60px;
+    height: 100px;
+    background-color: #0077ff;
+    position: absolute;
+    bottom: 10px;
+    left: 220px;
+    border-radius: 15px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+}
+
+#car::before {
+    content: "";
+    position: absolute;
+    top: -10px;
+    left: 10px;
+    width: 40px;
+    height: 20px;
+    background-color: #fff;
+    border-radius: 5px;
+}
+
+#car::after {
+    content: "";
+    position: absolute;
+    bottom: -10px;
+    left: 15px;
+    width: 30px;
+    height: 10px;
+    background-color: #fff;
+    border-radius: 5px;
+}
+
+.obstacle {
+    width: 50px;
+    height: 50px;
+    background-color: #f00;
+    position: absolute;
+    top: -50px;
+    animation: fall 2s linear infinite;
+    border-radius: 10px;
+}
+
+#obstacle1 { left: 50px; }
+#obstacle2 { left: 200px; }
+#obstacle3 { left: 350px; }
+
+@keyframes fall {
+    0% { top: -50px; }
+    100% { top: 750px; }
+}
+
+#score {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    font-size: 24px;
+    color: white;
+    font-weight: bold;
+}
+
+#game-over {
+    position: absolute;
+    top: 200px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: rgba(0, 0, 0, 0.8);
+    padding: 30px;
+    border-radius: 10px;
+    color: white;
+    text-align: center;
+    display: none;
+}
+
+#restart-btn {
+    background-color: #0077ff;
+    border: none;
+    padding: 10px 20px;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+.hidden {
+    display: none;
+}
+
+/* Controller Buttons */
+#controller {
+    position: absolute;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    justify-content: space-between;
+    width: 200px;
+}
+
+#left-btn, #right-btn {
+    width: 80px;
+    height: 50px;
+    font-size: 18px;
+    background-color: #0077ff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+#left-btn:hover, #right-btn:hover {
+    background-color: #005bb5;
+}
